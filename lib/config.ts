@@ -11,13 +11,15 @@ export interface PluginConfig {
     model?: string
     updateThreshold: number
     appendCwd: boolean
+    appendHostname: boolean
 }
 
 const defaultConfig: PluginConfig = {
     enabled: true,
     debug: false,
     updateThreshold: 1,
-    appendCwd: true
+    appendCwd: true,
+    appendHostname: true
 }
 
 const GLOBAL_CONFIG_DIR = join(homedir(), '.config', 'opencode')
@@ -99,7 +101,10 @@ function createDefaultConfig(): void {
   "updateThreshold": 1,
 
   // Append the current working directory on a new line
-  "appendCwd": true
+  "appendCwd": true,
+
+  // Append the hostname on a new line
+  "appendHostname": true
 }
 `
 
@@ -143,7 +148,8 @@ export function getConfig(ctx?: PluginInput): PluginConfig {
                 debug: globalConfig.debug ?? config.debug,
                 model: globalConfig.model ?? config.model,
                 updateThreshold: globalConfig.updateThreshold ?? config.updateThreshold,
-                appendCwd: globalConfig.appendCwd ?? config.appendCwd
+                appendCwd: globalConfig.appendCwd ?? config.appendCwd,
+                appendHostname: globalConfig.appendHostname ?? config.appendHostname
             }
         }
     } else {
@@ -158,7 +164,8 @@ export function getConfig(ctx?: PluginInput): PluginConfig {
                 debug: projectConfig.debug ?? config.debug,
                 model: projectConfig.model ?? config.model,
                 updateThreshold: projectConfig.updateThreshold ?? config.updateThreshold,
-                appendCwd: projectConfig.appendCwd ?? config.appendCwd
+                appendCwd: projectConfig.appendCwd ?? config.appendCwd,
+                appendHostname: projectConfig.appendHostname ?? config.appendHostname
             }
         }
     }

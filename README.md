@@ -76,7 +76,10 @@ The plugin creates a default global config on first run.
   "updateThreshold": 1,
 
   // Append the current working directory on a new line
-  "appendCwd": true
+  "appendCwd": true,
+
+  // Append the hostname on a new line
+  "appendHostname": true
 }
 ```
 

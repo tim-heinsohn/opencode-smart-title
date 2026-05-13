@@ -17,7 +17,7 @@ import { Logger } from "./lib/logger.js"
 import { selectModel } from "./lib/model-selector.js"
 import { TITLE_PROMPT } from "./prompt.js"
 import { join, sep } from "path"
-import { homedir } from "os"
+import { homedir, hostname } from "os"
 
 // Type for OpenCode client object
 interface OpenCodeClient {
@@ -410,13 +410,20 @@ async function updateSessionTitle(
         }
 
         const cwd = config.appendCwd ? formatCwdPath(baseDirectory) : null
-        const finalTitle = cwd ? `${newTitle}\n${cwd}` : newTitle
+        const host = config.appendHostname ? hostname() : null
+
+        const extraLines = [cwd, host].filter(Boolean) as string[]
+        const finalTitle = extraLines.length > 0
+            ? `${newTitle}\n${extraLines.join(" \u00b7 ")}`
+            : newTitle
 
         logger.info('update-title', 'Updating session with new title', {
             sessionId,
             title: finalTitle,
             appendCwd: config.appendCwd,
-            cwd
+            appendHostname: config.appendHostname,
+            cwd,
+            host
         })
 
         // Update session
