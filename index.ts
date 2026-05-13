@@ -457,9 +457,15 @@ async function updateSessionTitle(
 const SmartTitlePlugin: Plugin = async (ctx) => {
     const { client } = ctx
 
-    // Fetch OpenCode config at startup and merge with plugin defaults
-    const { data: opencodeConfig } = await client.config.get()
-    pluginConfig = mergeConfig(opencodeConfig)
+    // Start with defaults so plugin init never blocks.
+    // The config hook fires with the live config shortly after startup.
+    pluginConfig = mergeConfig(null)
+
+    // Non-blocking background fetch in case the hook is slow or absent
+    client.config.get().then(
+        ({ data }) => { pluginConfig = mergeConfig(data) },
+        () => { /* ignore — config hook will provide it */ }
+    )
 
     // Exit early if plugin is disabled
     if (!pluginConfig.enabled) {
