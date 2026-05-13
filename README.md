@@ -66,7 +66,7 @@ OpenCode has a built-in `small_model` key for lightweight tasks like title gener
 }
 ```
 
-> **Why `small_model`?** Kimi K2.6 does not offer a small / flash variant, so it's a good idea to route title generation to a cheaper, faster model such as Gemini 2.5 Flash. If `small_model` is not set, the plugin falls back to your default agent model.
+> **Why `small_model`?** When the main agent runs Kimi K2.6, title generation tends to produce generic placeholders like `New session 2026-05-13` instead of meaningful titles. Routing title generation to a different model (e.g. Gemini 2.5 Flash) fixes this. If `small_model` is not set, the plugin falls back to your default agent model.
 
 ### Plugin-specific toggles
 
