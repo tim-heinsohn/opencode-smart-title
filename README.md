@@ -23,35 +23,6 @@ Add to `~/.config/opencode/opencode.json`:
 }
 ```
 
-## Development
-
-For local testing, use the OpenCode plugin dev runner (recommended):
-
-```bash
-npm install
-npm run dev
-```
-
-Then enable the local dev plugin in your `opencode.json`:
-
-```json
-{
-  "plugin": ["@tarquinen/opencode-smart-title"]
-}
-```
-
-If you prefer manual linking, you can build and load from a local plugin directory:
-
-```bash
-npm install
-npm run build
-```
-
-Then copy or symlink the built plugin into one of:
-
-- `~/.config/opencode/plugins/`
-- `.opencode/plugins/`
-
 ## Configuration
 
 All settings live in your main OpenCode config (`~/.config/opencode/opencode.json` or `.opencode/opencode.json`).
@@ -93,6 +64,35 @@ Put them under the `"smart-title"` key in the same file:
 | `updateThreshold` | `1` | Update title every N idle events (`1` = every time you pause) |
 | `appendCwd` | `true` | Append the current working directory on a new line |
 | `appendHostname` | `true` | Append the hostname on the same extra line |
+
+## Development
+
+For local testing, use the OpenCode plugin dev runner (recommended):
+
+```bash
+npm install
+npm run dev
+```
+
+Then enable the local dev plugin in your `opencode.json`:
+
+```json
+{
+  "plugin": ["@tarquinen/opencode-smart-title"]
+}
+```
+
+If you prefer manual linking, you can build and load from a local plugin directory:
+
+```bash
+npm install
+npm run build
+```
+
+Then copy or symlink the built plugin into one of:
+
+- `~/.config/opencode/plugins/`
+- `.opencode/plugins/`
 
 ## License
 
