@@ -92,7 +92,7 @@ export async function selectModel(
                     model,
                     modelInfo: { providerID, modelID },
                     source: 'config',
-                    reason: 'Using model specified in smart-title.jsonc config'
+                    reason: 'Using model specified in OpenCode config (small_model)'
                 };
             } catch (error: any) {
                 logger?.warn('model-selector', '✗ Failed to use config-specified model, falling back', {

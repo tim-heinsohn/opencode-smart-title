@@ -54,34 +54,45 @@ Then copy or symlink the built plugin into one of:
 
 ## Configuration
 
-The plugin supports both global and project-level configuration:
+All settings live in your main OpenCode config (`~/.config/opencode/opencode.json` or `.opencode/opencode.json`).
 
-- **Global:** `~/.config/opencode/smart-title.jsonc` - Applies to all sessions
-- **Project:** `.opencode/smart-title.jsonc` - Overrides global config
+### Title model
 
-The plugin creates a default global config on first run.
+OpenCode has a built-in `small_model` key for lightweight tasks like title generation. We use it automatically, so you don't need a separate model setting for this plugin.
 
-```jsonc
+```json
 {
-  // Enable or disable the plugin
-  "enabled": true,
-
-  // Enable debug logging
-  "debug": false,
-
-  // Optional: Use a specific model (otherwise uses smart fallbacks)
-  // "model": "anthropic/claude-haiku-4-5",
-
-  // Update title every N idle events (1 = every time you pause)
-  "updateThreshold": 1,
-
-  // Append the current working directory on a new line
-  "appendCwd": true,
-
-  // Append the hostname on a new line
-  "appendHostname": true
+  "small_model": "google/gemini-2.5-flash"
 }
 ```
+
+> **Why `small_model`?** Kimi K2.6 does not offer a small / flash variant, so it's a good idea to route title generation to a cheaper, faster model such as Gemini 2.5 Flash. If `small_model` is not set, the plugin falls back to your default agent model.
+
+### Plugin-specific toggles
+
+Put them under the `"smart-title"` key in the same file:
+
+```json
+{
+  "plugin": ["@tarquinen/opencode-smart-title"],
+  "small_model": "google/gemini-2.5-flash",
+  "smart-title": {
+    "enabled": true,
+    "debug": false,
+    "updateThreshold": 1,
+    "appendCwd": true,
+    "appendHostname": true
+  }
+}
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `enabled` | `true` | Enable or disable the plugin |
+| `debug` | `false` | Enable debug logging to `~/.config/opencode/logs/smart-title/` |
+| `updateThreshold` | `1` | Update title every N idle events (`1` = every time you pause) |
+| `appendCwd` | `true` | Append the current working directory on a new line |
+| `appendHostname` | `true` | Append the hostname on the same extra line |
 
 ## License
 

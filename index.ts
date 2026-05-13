@@ -4,7 +4,7 @@
  * Automatically generates meaningful session titles based on conversation content.
  * Uses OpenCode auth provider for unified authentication across all AI providers.
  * 
- * Configuration: ~/.config/opencode/smart-title.jsonc
+ * Configuration: via OpenCode main config (opencode.json) — see README
  * Logs: ~/.config/opencode/logs/smart-title/YYYY-MM-DD.log
  * 
  * NOTE: ai package is lazily imported to avoid loading the 2.8MB package during
@@ -12,12 +12,16 @@
  */
 
 import type { Plugin } from "@opencode-ai/plugin"
-import { getConfig } from "./lib/config.js"
+import type { Config } from "@opencode-ai/sdk"
+import { mergeConfig, type PluginConfig } from "./lib/config.js"
 import { Logger } from "./lib/logger.js"
 import { selectModel } from "./lib/model-selector.js"
 import { TITLE_PROMPT } from "./prompt.js"
-import { join, sep } from "path"
+import { sep } from "path"
 import { homedir, hostname } from "os"
+
+// Mutable plugin config, updated by the config hook when OpenCode config changes
+let pluginConfig: PluginConfig
 
 // Type for OpenCode client object
 interface OpenCodeClient {
@@ -365,7 +369,7 @@ async function updateSessionTitle(
     client: OpenCodeClient,
     sessionId: string,
     logger: Logger,
-    config: ReturnType<typeof getConfig>,
+    config: PluginConfig,
     baseDirectory?: string
 ): Promise<void> {
     try {
@@ -451,27 +455,36 @@ async function updateSessionTitle(
  * Automatically updates session titles using AI and smart context selection
  */
 const SmartTitlePlugin: Plugin = async (ctx) => {
-    const config = getConfig(ctx)
+    const { client } = ctx
+
+    // Fetch OpenCode config at startup and merge with plugin defaults
+    const { data: opencodeConfig } = await client.config.get()
+    pluginConfig = mergeConfig(opencodeConfig)
 
     // Exit early if plugin is disabled
-    if (!config.enabled) {
+    if (!pluginConfig.enabled) {
         return {}
     }
 
-    const logger = new Logger(config.debug)
-    const { client } = ctx
+    const logger = new Logger(pluginConfig.debug)
 
     logger.info('plugin', 'Smart Title plugin initialized', {
-        enabled: config.enabled,
-        debug: config.debug,
-        model: config.model,
-        updateThreshold: config.updateThreshold,
-        globalConfigFile: join(homedir(), ".config", "opencode", "smart-title.jsonc"),
-        projectConfigFile: ctx.directory ? join(ctx.directory, ".opencode", "smart-title.jsonc") : "N/A",
-        logDirectory: join(homedir(), ".config", "opencode", "logs", "smart-title")
+        enabled: pluginConfig.enabled,
+        debug: pluginConfig.debug,
+        model: pluginConfig.model,
+        updateThreshold: pluginConfig.updateThreshold,
+        appendCwd: pluginConfig.appendCwd,
+        appendHostname: pluginConfig.appendHostname
     })
 
     return {
+        config: async (input: Config) => {
+            pluginConfig = mergeConfig(input)
+            logger.debug('config', 'Config updated from OpenCode', {
+                enabled: pluginConfig.enabled,
+                model: pluginConfig.model
+            })
+        },
         event: async ({ event }) => {
             // @ts-ignore - session.status is not yet in the SDK types
             if (event.type === "session.status" && event.properties.status.type === "idle") {
@@ -492,15 +505,15 @@ const SmartTitlePlugin: Plugin = async (ctx) => {
                 logger.debug('event', 'Idle count updated', {
                     sessionId,
                     currentCount,
-                    threshold: config.updateThreshold
+                    threshold: pluginConfig.updateThreshold
                 })
 
                 // Only update title if we've reached the threshold
-                if (currentCount % config.updateThreshold !== 0) {
+                if (currentCount % pluginConfig.updateThreshold !== 0) {
                     logger.debug('event', 'Threshold not reached, skipping title update', {
                         sessionId,
                         currentCount,
-                        threshold: config.updateThreshold
+                        threshold: pluginConfig.updateThreshold
                     })
                     return
                 }
@@ -508,11 +521,11 @@ const SmartTitlePlugin: Plugin = async (ctx) => {
                 logger.info('event', 'Threshold reached, triggering title update for idle session', {
                     sessionId,
                     currentCount,
-                    threshold: config.updateThreshold
+                    threshold: pluginConfig.updateThreshold
                 })
 
                 // Fire and forget - don't block the event handler
-                updateSessionTitle(client, sessionId, logger, config, ctx.directory).catch((error) => {
+                updateSessionTitle(client, sessionId, logger, pluginConfig, ctx.directory).catch((error) => {
                     logger.error('event', 'Title update failed', {
                         sessionId,
                         error: error.message,
