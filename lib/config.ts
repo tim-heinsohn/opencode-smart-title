@@ -10,12 +10,14 @@ export interface PluginConfig {
     debug: boolean
     model?: string
     updateThreshold: number
+    appendCwd: boolean
 }
 
 const defaultConfig: PluginConfig = {
     enabled: true,
     debug: false,
-    updateThreshold: 1
+    updateThreshold: 1,
+    appendCwd: true
 }
 
 const GLOBAL_CONFIG_DIR = join(homedir(), '.config', 'opencode')
@@ -94,7 +96,10 @@ function createDefaultConfig(): void {
   // "model": "anthropic/claude-haiku-4-5",
 
   // Update title every N idle events (default: 1)
-  "updateThreshold": 1
+  "updateThreshold": 1,
+
+  // Append the current working directory on a new line
+  "appendCwd": true
 }
 `
 
@@ -137,7 +142,8 @@ export function getConfig(ctx?: PluginInput): PluginConfig {
                 enabled: globalConfig.enabled ?? config.enabled,
                 debug: globalConfig.debug ?? config.debug,
                 model: globalConfig.model ?? config.model,
-                updateThreshold: globalConfig.updateThreshold ?? config.updateThreshold
+                updateThreshold: globalConfig.updateThreshold ?? config.updateThreshold,
+                appendCwd: globalConfig.appendCwd ?? config.appendCwd
             }
         }
     } else {
@@ -151,7 +157,8 @@ export function getConfig(ctx?: PluginInput): PluginConfig {
                 enabled: projectConfig.enabled ?? config.enabled,
                 debug: projectConfig.debug ?? config.debug,
                 model: projectConfig.model ?? config.model,
-                updateThreshold: projectConfig.updateThreshold ?? config.updateThreshold
+                updateThreshold: projectConfig.updateThreshold ?? config.updateThreshold,
+                appendCwd: projectConfig.appendCwd ?? config.appendCwd
             }
         }
     }

@@ -16,7 +16,7 @@ import { getConfig } from "./lib/config.js"
 import { Logger } from "./lib/logger.js"
 import { selectModel } from "./lib/model-selector.js"
 import { TITLE_PROMPT } from "./prompt.js"
-import { join } from "path"
+import { join, sep } from "path"
 import { homedir } from "os"
 
 // Type for OpenCode client object
@@ -215,6 +215,20 @@ function truncate(text: string, maxLength: number): string {
 }
 
 /**
+ * Format CWD for display (prefer ~ for home paths)
+ */
+function formatCwdPath(directory?: string): string | null {
+    if (!directory) return null
+    const home = homedir()
+    if (directory === home) return "~"
+    const homePrefix = home.endsWith(sep) ? home : `${home}${sep}`
+    if (directory.startsWith(homePrefix)) {
+        return `~${sep}${directory.slice(homePrefix.length)}`
+    }
+    return directory
+}
+
+/**
  * Format conversation context for title generation
  */
 function formatContextForTitle(turns: ConversationTurn[]): string {
@@ -351,7 +365,8 @@ async function updateSessionTitle(
     client: OpenCodeClient,
     sessionId: string,
     logger: Logger,
-    config: ReturnType<typeof getConfig>
+    config: ReturnType<typeof getConfig>,
+    baseDirectory?: string
 ): Promise<void> {
     try {
         logger.info('update-title', 'Title update triggered', { sessionId })
@@ -394,20 +409,25 @@ async function updateSessionTitle(
             return
         }
 
+        const cwd = config.appendCwd ? formatCwdPath(baseDirectory) : null
+        const finalTitle = cwd ? `${newTitle}\n${cwd}` : newTitle
+
         logger.info('update-title', 'Updating session with new title', {
             sessionId,
-            title: newTitle
+            title: finalTitle,
+            appendCwd: config.appendCwd,
+            cwd
         })
 
         // Update session
         await client.session.update({
             path: { id: sessionId },
-            body: { title: newTitle }
+            body: { title: finalTitle }
         })
 
         logger.info('update-title', 'Session title updated successfully', {
             sessionId,
-            title: newTitle
+            title: finalTitle
         })
 
     } catch (error: any) {
@@ -485,7 +505,7 @@ const SmartTitlePlugin: Plugin = async (ctx) => {
                 })
 
                 // Fire and forget - don't block the event handler
-                updateSessionTitle(client, sessionId, logger, config).catch((error) => {
+                updateSessionTitle(client, sessionId, logger, config, ctx.directory).catch((error) => {
                     logger.error('event', 'Title update failed', {
                         sessionId,
                         error: error.message,

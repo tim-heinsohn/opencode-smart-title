@@ -23,6 +23,35 @@ Add to `~/.config/opencode/opencode.json`:
 }
 ```
 
+## Development
+
+For local testing, use the OpenCode plugin dev runner (recommended):
+
+```bash
+npm install
+npm run dev
+```
+
+Then enable the local dev plugin in your `opencode.json`:
+
+```json
+{
+  "plugin": ["@tarquinen/opencode-smart-title"]
+}
+```
+
+If you prefer manual linking, you can build and load from a local plugin directory:
+
+```bash
+npm install
+npm run build
+```
+
+Then copy or symlink the built plugin into one of:
+
+- `~/.config/opencode/plugins/`
+- `.opencode/plugins/`
+
 ## Configuration
 
 The plugin supports both global and project-level configuration:
@@ -44,7 +73,10 @@ The plugin creates a default global config on first run.
   // "model": "anthropic/claude-haiku-4-5",
 
   // Update title every N idle events (1 = every time you pause)
-  "updateThreshold": 1
+  "updateThreshold": 1,
+
+  // Append the current working directory on a new line
+  "appendCwd": true
 }
 ```
 
