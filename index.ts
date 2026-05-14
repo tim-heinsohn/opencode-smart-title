@@ -454,17 +454,17 @@ async function updateSessionTitle(
  * Smart Title Plugin
  * Automatically updates session titles using AI and smart context selection
  */
-const SmartTitlePlugin: Plugin = async (ctx) => {
+const SmartTitlePlugin: Plugin = async (ctx, options?: Partial<PluginConfig>) => {
     const { client } = ctx
 
-    // Start with defaults so plugin init never blocks.
-    // The config hook fires with the live config shortly after startup.
-    pluginConfig = mergeConfig(null)
+    // OpenCode passes plugin options as the second tuple element.
+    // small_model comes from the main OpenCode config, everything else from options.
+    pluginConfig = mergeConfig(null, options)
 
-    // Non-blocking background fetch in case the hook is slow or absent
+    // Non-blocking background fetch for small_model from the live OpenCode config
     client.config.get().then(
-        ({ data }) => { pluginConfig = mergeConfig(data) },
-        () => { /* ignore — config hook will provide it */ }
+        ({ data }) => { pluginConfig = mergeConfig(data, options) },
+        () => { /* ignore — small_model will be absent until next idle event */ }
     )
 
     // Exit early if plugin is disabled
@@ -484,13 +484,6 @@ const SmartTitlePlugin: Plugin = async (ctx) => {
     })
 
     return {
-        config: async (input: Config) => {
-            pluginConfig = mergeConfig(input)
-            logger.debug('config', 'Config updated from OpenCode', {
-                enabled: pluginConfig.enabled,
-                model: pluginConfig.model
-            })
-        },
         event: async ({ event }) => {
             // @ts-ignore - session.status is not yet in the SDK types
             if (event.type === "session.status" && event.properties.status.type === "idle") {

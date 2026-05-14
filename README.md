@@ -19,7 +19,12 @@ Add to `~/.config/opencode/opencode.json`:
 
 ```json
 {
-  "plugin": ["@tarquinen/opencode-smart-title"]
+  "plugin": [
+    ["@tarquinen/opencode-smart-title", {
+      "appendCwd": true,
+      "appendHostname": true
+    }]
+  ]
 }
 ```
 
@@ -41,19 +46,20 @@ OpenCode has a built-in `small_model` key for lightweight tasks like title gener
 
 ### Plugin-specific toggles
 
-Put them under the `"smart-title"` key in the same file:
+Pass them as the **second element of a tuple** in the `plugin` array. OpenCode forwards this object directly to the plugin.
 
 ```json
 {
-  "plugin": ["@tarquinen/opencode-smart-title"],
-  "small_model": "google/gemini-2.5-flash",
-  "smart-title": {
-    "enabled": true,
-    "debug": false,
-    "updateThreshold": 1,
-    "appendCwd": true,
-    "appendHostname": true
-  }
+  "plugin": [
+    ["@tarquinen/opencode-smart-title", {
+      "enabled": true,
+      "debug": false,
+      "updateThreshold": 1,
+      "appendCwd": true,
+      "appendHostname": true
+    }]
+  ],
+  "small_model": "google/gemini-2.5-flash"
 }
 ```
 
@@ -78,7 +84,12 @@ Then enable the local dev plugin in your `opencode.json`:
 
 ```json
 {
-  "plugin": ["@tarquinen/opencode-smart-title"]
+  "plugin": [
+    ["@tarquinen/opencode-smart-title", {
+      "appendCwd": true,
+      "appendHostname": true
+    }]
+  ]
 }
 ```
 

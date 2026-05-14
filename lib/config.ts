@@ -19,33 +19,30 @@ const defaultConfig: PluginConfig = {
 }
 
 /**
- * Merge OpenCode's main config with plugin defaults.
+ * Merge plugin options and OpenCode config with defaults.
  *
  * Resolution order (later overrides earlier):
  *   1. Plugin defaults
  *   2. OpenCode `small_model` (used for title generation)
- *   3. Plugin-specific block under the `"smart-title"` key in opencode.json
+ *   3. Plugin options passed as the tuple second element in opencode.json
  */
-export function mergeConfig(opencodeConfig?: Config | null): PluginConfig {
+export function mergeConfig(
+    opencodeConfig?: Config | null,
+    pluginOptions?: Partial<PluginConfig>
+): PluginConfig {
     const config = { ...defaultConfig }
 
-    if (!opencodeConfig) return config
-
-    // OpenCode has a built-in `small_model` key for lightweight tasks like title generation
-    if (opencodeConfig.small_model) {
+    if (opencodeConfig?.small_model) {
         config.model = opencodeConfig.small_model
     }
 
-    // Plugin-specific toggles can live under a "smart-title" key in opencode.json
-    const pluginSettings = (opencodeConfig as Record<string, unknown>)["smart-title"]
-    if (pluginSettings && typeof pluginSettings === "object") {
-        const settings = pluginSettings as Partial<PluginConfig>
-        if (settings.enabled !== undefined) config.enabled = settings.enabled
-        if (settings.debug !== undefined) config.debug = settings.debug
-        if (settings.model !== undefined) config.model = settings.model
-        if (settings.updateThreshold !== undefined) config.updateThreshold = settings.updateThreshold
-        if (settings.appendCwd !== undefined) config.appendCwd = settings.appendCwd
-        if (settings.appendHostname !== undefined) config.appendHostname = settings.appendHostname
+    if (pluginOptions) {
+        if (pluginOptions.enabled !== undefined) config.enabled = pluginOptions.enabled
+        if (pluginOptions.debug !== undefined) config.debug = pluginOptions.debug
+        if (pluginOptions.model !== undefined) config.model = pluginOptions.model
+        if (pluginOptions.updateThreshold !== undefined) config.updateThreshold = pluginOptions.updateThreshold
+        if (pluginOptions.appendCwd !== undefined) config.appendCwd = pluginOptions.appendCwd
+        if (pluginOptions.appendHostname !== undefined) config.appendHostname = pluginOptions.appendHostname
     }
 
     return config
